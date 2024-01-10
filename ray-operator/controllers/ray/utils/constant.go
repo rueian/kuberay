@@ -6,6 +6,7 @@ const (
 	DefaultServeAppName = "default"
 	// Belows used as label key
 	RayServiceLabelKey                       = "ray.io/service"
+	RayJobLabelKey                           = "ray.io/job"
 	RayClusterLabelKey                       = "ray.io/cluster"
 	RayNodeTypeLabelKey                      = "ray.io/node-type"
 	RayNodeGroupLabelKey                     = "ray.io/group"
