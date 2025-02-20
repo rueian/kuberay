@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -363,6 +364,86 @@ func TestValidateRayClusterSpecRedisUsername(t *testing.T) {
 				},
 			}
 			err := ValidateRayClusterSpec(rayCluster)
+			if tt.expectError {
+				require.Error(t, err)
+				assert.EqualError(t, err, tt.errorMessage)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestValidateRayClusterSpecNames(t *testing.T) {
+	tests := []struct {
+		rayCluster   *rayv1.RayCluster
+		name         string
+		errorMessage string
+		expectError  bool
+	}{
+		{
+			name: "RayCluster name is too long (> 63 characters)",
+			rayCluster: &rayv1.RayCluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: strings.Repeat("A", 64),
+				},
+			},
+			expectError:  true,
+			errorMessage: "RayCluster name should be no more than 63 characters",
+		},
+		{
+			name: "Worker group name is too long (> 63 characters)",
+			rayCluster: &rayv1.RayCluster{
+				Spec: rayv1.RayClusterSpec{
+					HeadGroupSpec: rayv1.HeadGroupSpec{
+						Template: corev1.PodTemplateSpec{
+							Spec: corev1.PodSpec{
+								Containers: []corev1.Container{{Name: "ray-head"}},
+							},
+						},
+					},
+					WorkerGroupSpecs: []rayv1.WorkerGroupSpec{
+						{
+							GroupName: strings.Repeat("A", 64),
+						},
+					},
+				},
+			},
+			expectError:  true,
+			errorMessage: "group name should be no more than 63 characters",
+		},
+		{
+			name: "Both RayCluster name and Worker group name are ok (== 63 characters)",
+			rayCluster: &rayv1.RayCluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: strings.Repeat("A", 63),
+				},
+				Spec: rayv1.RayClusterSpec{
+					HeadGroupSpec: rayv1.HeadGroupSpec{
+						Template: corev1.PodTemplateSpec{
+							Spec: corev1.PodSpec{
+								Containers: []corev1.Container{{Name: "ray-head"}},
+							},
+						},
+					},
+					WorkerGroupSpecs: []rayv1.WorkerGroupSpec{
+						{
+							GroupName: strings.Repeat("A", 63),
+							Template: corev1.PodTemplateSpec{
+								Spec: corev1.PodSpec{
+									Containers: []corev1.Container{{Name: "ray-worker"}},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectError: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateRayClusterSpec(tt.rayCluster)
 			if tt.expectError {
 				require.Error(t, err)
 				assert.EqualError(t, err, tt.errorMessage)
