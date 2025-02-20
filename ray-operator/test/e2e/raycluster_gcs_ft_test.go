@@ -154,6 +154,7 @@ func TestRayClusterGCSFTWithMaximumNames(t *testing.T) {
 			).
 			WithRayVersion(GetRayVersion()).
 			WithHeadGroupSpec(rayv1ac.HeadGroupSpec().
+				WithEnableIngress(true).
 				WithRayStartParams(map[string]string{
 					"num-cpus": "0",
 				}).
