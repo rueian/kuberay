@@ -139,9 +139,9 @@ func TestRayClusterGCSFTWithMaximumNames(t *testing.T) {
 	testScript, err := test.Client().Core().CoreV1().ConfigMaps(namespace.Name).Apply(test.Ctx(), testScriptAC, TestApplyOptions)
 	g.Expect(err).NotTo(HaveOccurred())
 
-	test.T().Run("Test Maximum Cluster Name and Group name (63 characters)", func(_ *testing.T) {
-		maximumRayClusterName := strings.Repeat("r", 63)
-		maximumWorkerGroupName := strings.Repeat("w", 63)
+	test.T().Run("Test Maximum Cluster Name and Group name (46 characters)", func(_ *testing.T) {
+		maximumRayClusterName := strings.Repeat("r", 46)
+		maximumWorkerGroupName := strings.Repeat("w", 46)
 
 		checkRedisDBSize := deployRedis(test, namespace.Name, redisPassword)
 		defer g.Eventually(checkRedisDBSize, time.Second*30, time.Second).Should(BeEquivalentTo("0"))

@@ -382,17 +382,17 @@ func TestValidateRayClusterSpecNames(t *testing.T) {
 		expectError  bool
 	}{
 		{
-			name: "RayCluster name is too long (> 63 characters)",
+			name: "RayCluster name is too long (> 46 characters)",
 			rayCluster: &rayv1.RayCluster{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: strings.Repeat("A", 64),
+					Name: strings.Repeat("A", 47),
 				},
 			},
 			expectError:  true,
-			errorMessage: "RayCluster name should be no more than 63 characters",
+			errorMessage: "RayCluster name should be no more than 46 characters",
 		},
 		{
-			name: "Worker group name is too long (> 63 characters)",
+			name: "Worker group name is too long (> 46 characters)",
 			rayCluster: &rayv1.RayCluster{
 				Spec: rayv1.RayClusterSpec{
 					HeadGroupSpec: rayv1.HeadGroupSpec{
@@ -404,19 +404,19 @@ func TestValidateRayClusterSpecNames(t *testing.T) {
 					},
 					WorkerGroupSpecs: []rayv1.WorkerGroupSpec{
 						{
-							GroupName: strings.Repeat("A", 64),
+							GroupName: strings.Repeat("A", 47),
 						},
 					},
 				},
 			},
 			expectError:  true,
-			errorMessage: "group name should be no more than 63 characters",
+			errorMessage: "group name should be no more than 46 characters",
 		},
 		{
-			name: "Both RayCluster name and Worker group name are ok (== 63 characters)",
+			name: "Both RayCluster name and Worker group name are ok (== 46 characters)",
 			rayCluster: &rayv1.RayCluster{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: strings.Repeat("A", 63),
+					Name: strings.Repeat("A", 46),
 				},
 				Spec: rayv1.RayClusterSpec{
 					HeadGroupSpec: rayv1.HeadGroupSpec{
@@ -428,7 +428,7 @@ func TestValidateRayClusterSpecNames(t *testing.T) {
 					},
 					WorkerGroupSpecs: []rayv1.WorkerGroupSpec{
 						{
-							GroupName: strings.Repeat("A", 63),
+							GroupName: strings.Repeat("A", 46),
 							Template: corev1.PodTemplateSpec{
 								Spec: corev1.PodSpec{
 									Containers: []corev1.Container{{Name: "ray-worker"}},
