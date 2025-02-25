@@ -22,7 +22,7 @@ For the above reasons, it's worth it to build a generic abstraction on top of th
 
 The new gRPC service would be a individual deployment of the KubeRay control plane and user can choose to install it optionally. It will create a service and exposes endpoint to users.
 
-```
+```text
 NAME                                                      READY   STATUS    RESTARTS      AGE
 kuberay-grpc-service-c8db9dc65-d4w5r                      1/1     Running   0             2d15h
 kuberay-operator-785476b948-fmlm7                         1/1     Running   0             3d
@@ -31,7 +31,8 @@ kuberay-operator-785476b948-fmlm7                         1/1     Running   0   
 In issue [#29](https://github.com/ray-project/kuberay/issues/29), `RayCluster` CRD clientset has been generated and gRPC service can leverage it to operate Custom Resources.
 
 A simple flow would be like this. (Thanks [@akanso](https://github.com/akanso) for providing the flow)
-```
+
+```text
 client --> GRPC Server --> [created Custom Resources] <-- Ray Operator (reads CR and accordingly performs CRUD)
 ```
 
@@ -280,7 +281,6 @@ Since we may have different clients to interactive with our services, we will ge
 ### gRPC services
 
 The GRPC protocol provides an extremely efficient way of cross-service communication for distributed applications. The public toolkit includes instruments to generate client and server code-bases for many languages allowing the developer to use the most optimal language for the task.
-
 
 The service will implement gPRC server as following graph shows.
 

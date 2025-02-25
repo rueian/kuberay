@@ -14,12 +14,24 @@ const (
 	JOBS_RESOURCE
 	SERVICES_RESOURCE
 	RAYJOBS_RESOURCE
+	RAYSERVICES_RESOURCE
+	RAYCLUSTERS_RESOURCE
 )
 
 type ResourceLoggerFunc = func(sb *strings.Builder)
 
 func WithRayJobResourceLogger(t Test) types.GomegaTestingT {
 	resources := []int{PODS_RESOURCE, JOBS_RESOURCE, SERVICES_RESOURCE, RAYJOBS_RESOURCE}
+	return &RayResourceLogger{t: t, resources: resources}
+}
+
+func WithRayServiceResourceLogger(t Test) types.GomegaTestingT {
+	resources := []int{PODS_RESOURCE, SERVICES_RESOURCE, RAYSERVICES_RESOURCE, RAYCLUSTERS_RESOURCE}
+	return &RayResourceLogger{t: t, resources: resources}
+}
+
+func WithRayClusterResourceLogger(t Test) types.GomegaTestingT {
+	resources := []int{SERVICES_RESOURCE, RAYCLUSTERS_RESOURCE}
 	return &RayResourceLogger{t: t, resources: resources}
 }
 
@@ -108,6 +120,38 @@ func (l *RayResourceLogger) FprintRayJobs(sb *strings.Builder) {
 	}
 }
 
+func (l *RayResourceLogger) FprintRayServices(sb *strings.Builder) {
+	if rayServices, err := l.t.Client().Ray().RayV1().RayServices("").List(l.t.Ctx(), metav1.ListOptions{}); err == nil {
+		fmt.Fprintf(sb, "\n=== RayServices across all namespaces ===\n")
+		for _, rayService := range rayServices.Items {
+			rayServiceJSON, err := json.MarshalIndent(rayService, "", "    ")
+			if err != nil {
+				fmt.Fprintf(sb, "Error marshaling rayservice %s/%s: %v\n", rayService.Namespace, rayService.Name, err)
+				continue
+			}
+			fmt.Fprintf(sb, "---\n# RayService: %s/%s\n%s\n", rayService.Namespace, rayService.Name, string(rayServiceJSON))
+		}
+	} else {
+		fmt.Fprintf(sb, "Failed to get rayservices: %v\n", err)
+	}
+}
+
+func (l *RayResourceLogger) FprintRayClusters(sb *strings.Builder) {
+	if rayClusters, err := l.t.Client().Ray().RayV1().RayClusters("").List(l.t.Ctx(), metav1.ListOptions{}); err == nil {
+		fmt.Fprintf(sb, "\n=== RayClusters across all namespaces ===\n")
+		for _, rayCluster := range rayClusters.Items {
+			rayClusterJSON, err := json.MarshalIndent(rayCluster, "", "    ")
+			if err != nil {
+				fmt.Fprintf(sb, "Error marshaling rayCluster %s/%s: %v\n", rayCluster.Namespace, rayCluster.Name, err)
+				continue
+			}
+			fmt.Fprintf(sb, "---\n# rayCluster: %s/%s\n%s\n", rayCluster.Namespace, rayCluster.Name, string(rayClusterJSON))
+		}
+	} else {
+		fmt.Fprintf(sb, "Failed to get rayCluster: %v\n", err)
+	}
+}
+
 func (l *RayResourceLogger) MakeFprintUnsupportedResource(resource int) func(sb *strings.Builder) {
 	return func(sb *strings.Builder) {
 		fmt.Fprintf(sb, "Error: Unsupported resource: %d for RayResourceLogger\n", resource)
@@ -126,6 +170,10 @@ func (l *RayResourceLogger) GetLoggers() []ResourceLoggerFunc {
 			loggers = append(loggers, l.FprintServices)
 		case RAYJOBS_RESOURCE:
 			loggers = append(loggers, l.FprintRayJobs)
+		case RAYSERVICES_RESOURCE:
+			loggers = append(loggers, l.FprintRayServices)
+		case RAYCLUSTERS_RESOURCE:
+			loggers = append(loggers, l.FprintRayClusters)
 		default:
 			loggers = append(loggers, l.MakeFprintUnsupportedResource(resource))
 		}
